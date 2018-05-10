@@ -1,0 +1,80 @@
+;***************************************
+; Unique Function
+;***************************************
+
+;Hepler function to check if the rest of the seq contains passed values
+(def contains-helper
+  (fn [s e]
+    (if
+      (empty? s) false
+      (if
+        (= (first s) e) true
+	(recur (rest s) e)))))
+	
+;Main function
+(def unique
+  (fn [F s]
+    (if (not (empty? s))
+      (if (contains-helper (rest s) (first s))
+        (recur F (rest s))
+	(do
+	  (F (first s))
+	  (recur F (rest s)))))))
+
+
+
+;***************************************
+; Nest Function
+;***************************************
+
+(def comp-help
+  (fn [f g]
+    (fn [& a]
+      (f (apply g a)))))
+      
+;(comp - *) => (fn[& a] (- (apply * a)))
+
+
+;(def inc0 (nest inc 0))
+;(inc0 1) ⇒ 1  
+;(inc1 1) ⇒ (inc 1) ⇒ 2  
+;(inc2 1) ⇒ (inc (inc 1)) ⇒ 3  
+;(inc3 1) ⇒ (inc (inc (inc 1))) ⇒ 4
+
+;(def inc0 (nest inc 0))  
+;(def inc1 (nest inc 1))  
+;(def inc2 (nest inc 2))  
+;(def inc3 (nest inc 3))
+
+(def nest
+  (fn [F N]
+    (if N < 0)
+      nil
+    (fn [x]
+      (loop [num x count N]
+        (if (= count 0)
+	  num
+	(recur (inc num) (- count 1))))))))
+ 
+
+;***************************************
+; Cartesian Function
+;***************************************
+
+;Helper function  to map each value of u to all the elements of v
+(def mappy
+  (fn [F current elements]
+   (if
+     (empty? elements)
+    '()
+    (concat
+      (list(F current (first elements)))
+      (mappy F current (rest elements))))))
+
+
+;Main function
+(def cartesian
+  (fn [F u v]
+    (if (empty? u)
+      '()
+    (concat (mappy F (first u) v) (cartesian F (rest u) v)))))

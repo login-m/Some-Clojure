@@ -1,0 +1,121 @@
+
+;Small Helper Functions
+
+(def op
+  (fn [s]
+    (first s)))
+
+(def left
+  (fn [s]
+    (second s)))
+
+(def right
+  (fn [s]
+    (first (rest (rest s)))))
+
+;(make-if
+
+; (fn [arg1 arg2 arg3]
+   ; (list 'if arg1 arg2 arg3)))
+
+
+(def if-then
+  (fn [s]
+    (first (rest (rest s)))))
+    
+
+(def if-else
+  (fn [s]
+    (first (rest (rest (rest s))))))
+    
+;(def test-if
+ ; (fn [s]
+  ;  (if (or (seq? (second s)) (seq? (first (nth s 2)))) true false)))
+    ;(if (seq? (rest s)) true
+    ;(if (test-if (rest (rest s))) true false))))
+  
+
+(def third
+  (fn [s]
+    (nth s 2)))
+
+;*************
+
+
+
+;Main Helper Functions
+;change  if1 = '(if) + rest
+(def ifify
+  (fn [P]
+    (if (and (seq? P))
+      (let [operator (op P) if1 '(if) true1 '(true) false1 '(false)]
+        (if (= operator 'not)
+          (concat if1 (list (ifify (left P))) false1 true1)
+	(if (= operator 'and)
+	  (concat if1 (list (ifify (left P))) (list (ifify (right P))) false1)
+	(if (= operator 'or)
+	  (concat if1 (list(ifify (left P))) true1 (list (ifify (right P))))
+	(if (= operator 'imply)
+	  (concat if1 (list (ifify (left P))) (list (ifify (right P))) true1)
+	(if (= operator 'equiv)
+	  (concat if1 (list (ifify (left P))) (list (ifify (right P))) (list (concat if1 (list (ifify (right P))) false1 true1)))
+	))))))
+     P)))
+
+
+
+;find the occurence of (if (if . . . ))
+
+;(if (if (if p q false) false true) (if (if p false true) true (if q false true)) true)
+
+
+
+(def normalize
+  (fn [C]
+    (cond
+        (and (println "C: " C) (symbol? C)) C
+	(= 'if (seq?  (second C))) (normalize (list 'if (normalize (second C)) (nth 2 C) (nth 3 C)))
+        (= 'if (seq? (if-then C))) (normalize (list 'if (second C) (normalize (nth 2 C)) (nth 3 C)))
+	(= 'if (seq? (if-else C))) (normalize (list 'if (second C) (nth 2 C) (normalize (nth 3 C))))
+	:else
+	  (list (concat ('if)
+	        (list (second (second C)))
+         	(list (concat '(if) (list (if-then (second C))) (list (if-then C)) (list (if-else C))))
+	 	(list (concat '(if) (list (if-else (second C))) (list (if-then C)) (list (if-else C))))
+	  )))))
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+;***SAVED COPY***
+
+;(def normalize
+ ; (fn [C]
+  ;  (if (and (seq? (second C)) (=(first (second C)) 'if))
+   ;   (normalize
+    ;    (concat  '(if)
+;	                        ;pi
+ ;                (list (second (second C)))
+;		                ;if          a1                     a2                  b2 
+;	         (list (concat '(if) (normalize (if-then (normalize (second C)))) (normalize (if-then C))  (normalize (if-else C))))
+;		                ;if          b1                     a2                  b2
+;	         (list (concat '(if) (normalize (if-else (normalize (second C)))) (normalize (if-then C))  (normalize (if-else C))))
+;	))
+ ;   (if (and (seq? (if-then C)) (= (first(if-then C)) 'if))	
+  ;     (list (concat '(if) (second C) (normalize (if-then C))))
+;
+ ;   (if (and (seq? (if-else C)) (= (first(if-else C)) 'if))
+  ;     (list (concat '(if) (second C) (normalize (if-else C))))
+;
+ ;    C)))))
+    
